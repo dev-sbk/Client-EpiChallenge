@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/EpiChallange.iml" filepath="$PROJECT_DIR$/EpiChallange.iml" />
+      <module fileurl="file://$PROJECT_DIR$/EpiChallenge.iml" filepath="$PROJECT_DIR$/EpiChallenge.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>
