@@ -1,9 +1,11 @@
-package com.bwialabs.epichallange;
+package com.bwialabs.epichallange.activity;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+
+import com.bwialabs.epichallange.R;
 
 public class Splash extends Activity {
 
@@ -25,7 +27,7 @@ public class Splash extends Activity {
             public void run() {
                 // This method will be executed once the timer is over
                 // Start your app main activity
-                Intent i = new Intent(Splash.this, MainActivity.class);
+                Intent i = new Intent(Splash.this, LoginActitvity.class);
                 startActivity(i);
 
                 // close this activity
