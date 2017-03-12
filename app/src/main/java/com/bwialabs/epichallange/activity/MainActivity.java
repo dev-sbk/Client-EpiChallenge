@@ -1,59 +1,87 @@
 package com.bwialabs.epichallange.activity;
 
+import android.content.Context;
+import android.content.Intent;
+import android.content.res.Resources;
+import android.graphics.Rect;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageView;
 
+import com.bumptech.glide.Glide;
 import com.bwialabs.epichallange.R;
+import com.bwialabs.epichallange.activity.Config.Config;
+import com.bwialabs.epichallange.adapter.Produit;
+import com.bwialabs.epichallange.adapter.ProduitAdapter;
+import com.bwialabs.epichallange.api.RestApi;
+import com.bwialabs.epichallange.domain.Categorie;
+import com.google.gson.Gson;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import retrofit.Callback;
+import retrofit.RestAdapter;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
+
+import static android.R.attr.order;
+
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
+    private RecyclerView recyclerView;
+    private ProduitAdapter adapter;
+    private List<Produit> albumList;
+    Menu menu ;
+    NavigationView navigationView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+        /*********************************/
+        recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+
+        albumList = new ArrayList<>();
+        adapter = new ProduitAdapter(this, albumList);
+
+        RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(this, 2);
+        recyclerView.setLayoutManager(mLayoutManager);
+        recyclerView.addItemDecoration(new GridSpacingItemDecoration(2, dpToPx(10), true));
+        recyclerView.setItemAnimator(new DefaultItemAnimator());
+        recyclerView.setAdapter(adapter);
+
+        prepareAlbums();
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
-
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView=(NavigationView)findViewById(R.id.nav_view) ;
         navigationView.setNavigationItemSelectedListener(this);
-    }
+        menu=navigationView.getMenu();
+        loadmenu();
 
-    @Override
-    public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
-        }
     }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -100,4 +128,128 @@ public class MainActivity extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
-}
+
+    /**
+     * Adding few albums for testing
+     */
+    private void prepareAlbums() {
+        int[] covers = new int[]{
+                R.drawable.album1,
+                R.drawable.album2,
+                R.drawable.album3,
+                R.drawable.album4,
+                R.drawable.album5,
+                R.drawable.album6,
+                R.drawable.album7,
+                R.drawable.album8,
+                R.drawable.album9,
+                R.drawable.album10,
+                R.drawable.album11};
+
+        Produit a = new Produit("True Romance", 13, covers[0]);
+        albumList.add(a);
+
+        a = new Produit("Xscpae", 8, covers[1]);
+        albumList.add(a);
+
+        a = new Produit("Maroon 5", 11, covers[2]);
+        albumList.add(a);
+
+        a = new Produit("Born to Die", 12, covers[3]);
+        albumList.add(a);
+
+        a = new Produit("Honeymoon", 14, covers[4]);
+        albumList.add(a);
+
+        a = new Produit("I Need a Doctor", 1, covers[5]);
+        albumList.add(a);
+
+        a = new Produit("Loud", 11, covers[6]);
+        albumList.add(a);
+
+        a = new Produit("Legend", 14, covers[7]);
+        albumList.add(a);
+
+        a = new Produit("Hello", 11, covers[8]);
+        albumList.add(a);
+
+        a = new Produit("Greatest Hits", 17, covers[9]);
+        albumList.add(a);
+
+        adapter.notifyDataSetChanged();
+    }
+    /**
+     * RecyclerView item decoration - give equal margin around grid item
+     */
+    public class GridSpacingItemDecoration extends RecyclerView.ItemDecoration {
+
+        private int spanCount;
+        private int spacing;
+        private boolean includeEdge;
+
+        public GridSpacingItemDecoration(int spanCount, int spacing, boolean includeEdge) {
+            this.spanCount = spanCount;
+            this.spacing = spacing;
+            this.includeEdge = includeEdge;
+        }
+
+        @Override
+        public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
+            int position = parent.getChildAdapterPosition(view); // item position
+            int column = position % spanCount; // item column
+
+            if (includeEdge) {
+                outRect.left = spacing - column * spacing / spanCount; // spacing - column * ((1f / spanCount) * spacing)
+                outRect.right = (column + 1) * spacing / spanCount; // (column + 1) * ((1f / spanCount) * spacing)
+
+                if (position < spanCount) { // top edge
+                    outRect.top = spacing;
+                }
+                outRect.bottom = spacing; // item bottom
+            } else {
+                outRect.left = column * spacing / spanCount; // column * ((1f / spanCount) * spacing)
+                outRect.right = spacing - (column + 1) * spacing / spanCount; // spacing - (column + 1) * ((1f /    spanCount) * spacing)
+                if (position >= spanCount) {
+                    outRect.top = spacing; // item top
+                }
+            }
+        }
+    }
+    /**
+     * Converting dp to pixel
+     */
+    private int dpToPx(int dp) {
+        Resources r = getResources();
+        return Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, r.getDisplayMetrics()));
+    }
+
+    public void loadmenu(){
+
+        RestAdapter restAdapter = new RestAdapter.Builder().setEndpoint(Config.url).build();
+        final RestApi rest = restAdapter.create(RestApi.class);
+
+        rest.getcat(new Callback<Categorie>() {
+            @Override
+            public void success(Categorie cat, Response response) {
+                if (cat!=null) {
+
+                    Gson gson = new Gson();
+                    String json = gson.toJson(cat);
+                    System.out.println("*******************"+json.toString()+response.toString());
+                    {
+                        MenuItem lNavigationMenuItem = menu.add(123,123,000,"title");
+                        //fetch the bitmap from the server asynchronously before and add it to the menu as follows
+                        lNavigationMenuItem.setIcon(new BitmapDrawable(String.valueOf(R.drawable.login))); }
+
+                }
+            }
+
+            @Override
+            public void failure(RetrofitError error) {
+
+            }
+        });
+
+
+}}
+

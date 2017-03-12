@@ -1,9 +1,11 @@
 package com.bwialabs.epichallange.activity;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import com.bwialabs.epichallange.R;
@@ -11,13 +13,12 @@ import com.bwialabs.epichallange.R;
 import java.util.Timer;
 import java.util.TimerTask;
 
-/**
- * Created by DEV-PC on 11/03/2017.
- */
 
 public class LoginActitvity extends Activity {
 
     private Button btnLogin;
+    private EditText log;
+    private EditText pass;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,23 +31,26 @@ public class LoginActitvity extends Activity {
                 login();
             }
         });
+        log=(EditText) findViewById(R.id.log);
+        pass=(EditText) findViewById(R.id.pass);
+
     }
 
     private void login() {
+        System.out.println("cccccccccccc");
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Timer t = new Timer();
-                t.schedule(new TimerTask() {
-                    @Override
-                    public void run() {
-                       System.out.println("********************************");
-                    }
-                }, 3000);
+        if(log.getText().toString().equals("admin") && pass.getText().toString().equals("admin")  )
+        {
 
-            }
-        }).start();
+            Intent i = new Intent(this, MainActivity.class);
+            startActivity(i);
+
+            // close this activity
+            finish();
+
+        }
+
+
 
     }
 }
